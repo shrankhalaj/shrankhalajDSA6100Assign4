@@ -1,0 +1,84 @@
+---
+title: "Untitled"
+author: "Shrankhala Jain"
+date: "2/5/2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(car)
+setwd ('/Users/ankurjain/Desktop/Assign 4')
+math = read.csv(file = 'student-mat.csv', header=T, sep= ',')
+math <- data.frame(math)
+glimpse (math) 
+# In this Hypothesis test I used an Independent-Samples T-Test, which is used to compare two sample means from different populations regarding the same variable to determine whether the difference between the two means is statistically significant or occurred by chance alone.
+```
+#The math dataset have 395 observations and 33 variables.
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+# Make dataset that consists only of math data, with variables sex and final grade.
+math_2 = subset(math, select = c(sex, G3))
+glimpse(math_2)
+#So, we have 1 categorical (factor) variable which is sex. And we have 1 quantitative variable which is G3 (final test score).When we make a t-test, what we usually do is test whether a hypothesis is likely to be true or false.
+
+#In order for us to plot the sex variable in a barplot, we need to save the table information
+#in a separate vector, which is called sex_graph. 
+sex_graph <- table(math_2$sex)
+
+# Histograms/barplot of the different variables that will be relevant to the statistical tests. 
+par(mfrow=c(2,2))
+hist(math_2$G3, breaks = 30, col = "grey")
+barplot(sex_graph, col="grey", main = "Barplot of math_2$sex")
+
+# Density plots for age, absences and final score
+G3_dens <- density(math_2$G3)
+plot(G3_dens)
+#We can see some clear patterns in the data - there is only a few more females than males, and the final score on math is approximately evenly distributed. 
+
+# Make a ggplot that portrays both girls and boys in the same plot
+ggplot(data=math_2, aes(x=G3, fill=sex)) +
+  geom_bar(stat="count", position="dodge", color="black")
+
+# Make two plots that show each sex in separate plots.
+par(mfrow=c(2,1))
+par(mar=c(1,1,1,1))
+hist(math_2$G3[math_2$sex=="F"], breaks = 30, col = "grey")
+hist(math_2$G3[math_2$sex=="M"], breaks = 30, col = "grey")
+#It's hard to acually get a good idea of the differences between girls and boys based on visual presentations of the data. They look to be rather evenly distributed between the two groups, which is great. Let's try doing the means for both groups, with and without the people who failed the test.
+# The mean of both groups, including pupils that got a 0 on the final score
+mean(math_2$G3[math_2$sex=="F"])
+mean(math_2$G3[math_2$sex=="M"])
+
+# The mean of both groups, excluding pupils that got a 0 on the final score
+mean(math_2$G3[math_2$sex=="F" & math$G3>0])
+mean(math_2$G3[math_2$sex=="M" & math$G3>0])
+
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+# To run t-test
+# Run Bartlett's test
+bartlett.test(G3[math_2$G3 > 0] ~ sex[math_2$G3 > 0], data=math_2)
+
+# Run Levene's test (remember to load the *car* library for to work)
+leveneTest(y = math_2$G3, group = math_2$sex)
+t.test(math_2$G3[math_2$sex=="F" & math$G3>0], math_2$G3[math_2$sex=="M" & math$G3>0])
+#The mean final scores of both girls and boys are presented in the console after running the t-test. The girls had a score of 11.20, and the boys had a mean score of 11.86 - this difference is equal to 0.66.
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
